@@ -39,7 +39,7 @@ function GetRarities(obj,color,alt)
   Global.SetVar("PPacksRarityLoading",pageSize)
   r={}
   for c=1,pageSize do
-   r[c]=WebRequest.get('https://api.pokemontcg.io/v2/cards?q=!set.name:"'..string.gsub(self.getInputs()[1].value,"&","%%26")..'"&page='..tostring(c)..'&pageSize='..tostring(300/pageSize), function() handleRarities(r[c],color,c,pageSize)end)
+   r[c]=WebRequest.get('https://api.pokemontcg.io/v2/cards?q=!set.name:"'..string.gsub(self.getInputs()[1].value,"&","%%26")..'"&page='..tostring(c)..'&pageSize='..tostring(300/pageSize).."&orderBy=number", function() handleRarities(r[c],color,c,pageSize)end)
   end
  end
 end
