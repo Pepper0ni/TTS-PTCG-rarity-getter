@@ -20,8 +20,8 @@ function onLoad()
  self.createButton(params)
 
  params.position[3]=1.5
- params.tooltip="The set name to search"
- params.label='Enter Set Name'
+ params.tooltip="The set ID to search"
+ params.label='Enter Set ID'
  params.alignment=3
  params.input_function="dummyFunc"
  params.font_color={0,0,0}
@@ -39,7 +39,7 @@ function GetRarities(obj,color,alt)
   Global.SetVar("PPacksRarityLoading",pageSize)
   r={}
   for c=1,pageSize do
-   r[c]=WebRequest.get('https://api.pokemontcg.io/v2/cards?q=!set.name:"'..string.gsub(self.getInputs()[1].value,"&","%%26")..'"&page='..tostring(c)..'&pageSize='..tostring(300/pageSize).."&orderBy=number", function() handleRarities(r[c],color,c,pageSize)end)
+   r[c]=WebRequest.get('https://api.pokemontcg.io/v2/cards?q=!set.id:"'..self.getInputs()[1].value..'"&page='..tostring(c)..'&pageSize='..tostring(300/pageSize).."&orderBy=number", function() handleRarities(r[c],color,c,pageSize)end)
   end
  end
 end
