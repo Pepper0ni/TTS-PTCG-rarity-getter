@@ -23,7 +23,7 @@ function onLoad()
  params.tooltip="The set ID to search"
  params.label='Enter Set ID'
  params.alignment=3
- params.input_function="dummyFunc"
+ params.input_function="processReturn"
  params.font_color={0,0,0}
  self.createInput(params)
 end
@@ -75,7 +75,12 @@ function handleRarities(request,color,page,pageSize)
  end
 end
 
-function dummyFunc()
+function processReturn(obj,color,value,selected)
+ local subedValue=string.gsub(value,"\n","")
+ if subedValue!=value then
+  Wait.frames(function()GetRarities(obj,color,false) end,1)
+ end
+ return subedValue
 end
 
 function resetLoad()
