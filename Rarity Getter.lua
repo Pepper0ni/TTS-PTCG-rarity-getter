@@ -2,30 +2,29 @@ function onLoad()
  local selfScale=self.getScale()
  local params={
  function_owner=self,
- label='Get Rarities',
- tooltip="Logs set rarities in notes",
  font_size=180,
  width=1500,
  height=220,
  scale={1/selfScale.x,1/selfScale.y,1/selfScale.z},
- position={0,0,1},
- click_function='GetRarities'
  }
- self.createButton(params)
- 
- params.position[3]=2
- params.label='Reset Loading'
- params.tooltip="Resets the loading var if it crashes"
- params.click_function='resetLoad'
- self.createButton(params)
+ butWrapper(params,{0,0,1},'Get Rarities',"Logs set rarities in notes",'GetRarities')
+ butWrapper(params,{0,0,2},'Reset Loading',"Resets the loading var if it crashes",'resetLoad')
 
- params.position[3]=1.5
+ params.position={0,0,1.5}
  params.tooltip="The set ID to search"
  params.label='Enter Set ID'
  params.alignment=3
  params.input_function="processReturn"
  params.font_color={0,0,0}
  self.createInput(params)
+end
+
+function butWrapper(params,pos,label,tool,func)
+ params.position=pos
+ params.label=label
+ params.tooltip=tool
+ params.click_function=func
+ self.createButton(params)
 end
 
 rarityTable={}
@@ -44,6 +43,8 @@ function GetRarities(obj,color,alt)
  end
 end
 
+reverseRarities={Common=true,Uncommon=true,Rare=true,["Rare Holo"]=true}
+
 function handleRarities(request,color,page,pageSize)
  local loadVar=Global.GetVar("PPacksRarityLoading")
  if request.is_error or request.response_code>=400 then
@@ -58,20 +59,56 @@ function handleRarities(request,color,page,pageSize)
 --string.gsub(request.text,[[\u([0-9a-fA-F]+)]],function(s)return([[\u{%s}]]):format(s)end)
   local basePage=(page-1)*(300/pageSize)
   for c,cardData in ipairs(decoded.data)do
-   if rarityTable[cardData.rarity] then
-    table.insert(rarityTable[cardData.rarity],c+basePage)
-   else
-    rarityTable[cardData.rarity]={c+basePage}
+   if not (string.match(cardData.number,"^%d")and string.match(cardData.number,"%l$"))then
+    if rarityTable[cardData.rarity] then
+     table.insert(rarityTable[cardData.rarity],c+basePage)
+    else
+     rarityTable[cardData.rarity]={c+basePage}
+    end
+    if reverseRarities[cardData.rarity]then
+     if rarityTable["Reverse Holo"] then
+      table.insert(rarityTable["Reverse Holo"],c+basePage)
+     else
+      rarityTable["Reverse Holo"]={c+basePage}
+     end
+    end
    end
   end
   if loadVar==1 then
    local outputStr=""
-   for rarity,cards in pairs(rarityTable) do
-    outputStr=outputStr..rarity.."={"..table.concat(cards,",").."}\n"
+   for rarity,cards in pairs(rarityTable)do
+    table.sort(cards)
+    local lastnum=-1
+    local chain=-1
+    local cardsStr="={"
+    for c,card in pairs(cards)do
+     if chain==-1 or card==lastnum+1 then
+      chain=chain+1
+      lastnum=card
+     else
+      cardsStr=finishChain(chain,lastnum,cardsStr,true)
+      chain=0
+      lastnum=card
+     end
+    end
+    cardsStr=finishChain(chain,lastnum,cardsStr,false)
+    outputStr=outputStr..rarity..cardsStr.."},size="..tostring(#cards).."\n"
    end
    Notes.setNotes(outputStr)
   end
   Global.SetVar("PPacksRarityLoading",loadVar-1)
+ end
+end
+
+function finishChain(chain,lastnum,str,comma)
+ local commatext=""
+ if comma then commatext=","end
+ if chain==0 then
+  return str..tostring(lastnum)..commatext
+ elseif chain==1 then
+  return str..tostring(lastnum-1)..","..tostring(lastnum)..commatext
+ else
+  return str.."{"..tostring(lastnum-chain)..","..tostring(lastnum).."}"..commatext
  end
 end
 
