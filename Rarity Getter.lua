@@ -1,11 +1,9 @@
 function onLoad()
- local selfScale=self.getScale()
  local params={
  function_owner=self,
  font_size=180,
  width=1500,
  height=220,
- scale={1/selfScale.x,1/selfScale.y,1/selfScale.z},
  }
  butWrapper(params,{0,0,1},'Get Rarities',"Logs set rarities in notes",'GetRarities')
  butWrapper(params,{0,0,2},'Reset Loading',"Resets the loading var if it crashes",'resetLoad')
